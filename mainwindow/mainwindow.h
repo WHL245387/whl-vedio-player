@@ -36,6 +36,7 @@ private:
 	QAction *newFileAction;
 	QAction *openFileAction;
 	QAction *saveFileAction;
+	QAction *exitAction;
 	QAction *copyAction;
 	QAction *cutAction;	
 	QAction *pasteAction;	

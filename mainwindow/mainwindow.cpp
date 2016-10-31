@@ -29,6 +29,7 @@ void MainWindow::createMenus()
 	fileMenu->addAction(newFileAction);	
 	fileMenu->addAction(openFileAction);
 	fileMenu->addAction(saveFileAction);	
+	fileMenu->addAction(exitAction);
 	
 	editMenu = menuBar()->addMenu(tr("Edit"));
 	editMenu->addAction(copyAction);
@@ -48,6 +49,9 @@ void MainWindow::createActions()
 	connect(openFileAction,SIGNAL(triggered()),this,SLOT(slotOpenFile()));
 	saveFileAction = new QAction(QIcon(":/images/save.png"),tr("Save"),this);
 	connect(saveFileAction,SIGNAL(triggered()),this,SLOT(slotSaveFile()));
+	exitAction = new QAction("Exit",this);
+	connect(exitAction,SIGNAL(triggered()),this,SLOT(close()));
+	
 	//edit
 	copyAction = new QAction(QIcon(":/images/save.png"),tr("Copy"),this);
 	connect(copyAction,SIGNAL(triggered()),this,SLOT(slotCopy()));
