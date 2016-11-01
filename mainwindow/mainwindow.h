@@ -21,6 +21,7 @@ public:
 	void createActions();
 	void createTools();
 	void createStatus();
+	void loadFile(QString fileName);
 public slots:
 
 	void slotNewFile();

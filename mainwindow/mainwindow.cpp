@@ -5,6 +5,7 @@
 #include "QTextEdit"
 #include "QLabel"
 #include "QWorkspace"
+#include "QFileDialog"
 
 #include "mainwindow.h"
 
@@ -18,11 +19,6 @@ MainWindow::MainWindow()
 	createMenus();
 	createTools();
 	createStatus();
-	// aboutAction = new QAction(tr("About"),this);
-	// aboutAction->setCheckable(true);
-	// aboutMenu = menuBar()->addMenu(tr("about"));
-	// aboutMenu->addAction(aboutAction);
-	// connect(aboutAction,SIGNAL(triggered()),this,SLOT(slotAbout()));
 
 }
 
@@ -97,23 +93,54 @@ void MainWindow::createStatus()
 }
 
 
+void MainWindow::loadFile(QString fileName)
+{
+	QFile file(fileName);//The QFile class provides an interface for reading from and writing to files
+	if(file.open(QIODevice::ReadOnly|QIODevice::Text))
+	{
+		//Using Streams to Read Files
+		QTextStream textStream(&file);
+		while(!textStream.atEnd())
+		{
+			text->append(textStream.readLine());
+		}
+		
+	}
+	
+}
+
 void MainWindow::slotNewFile()
 {
 
+	MainWindow *newWin = new MainWindow;
+	newWin->show();
 	
 }
 
 void MainWindow::slotOpenFile()
 {
-    // MainWindow *newWin = new MainWindow();  
-    // newWin->show();  
+	QString file = QFileDialog::getOpenFileName(this);
+	if(!file.isEmpty())
+	{
+		if(text->document()->isEmpty())//当前text为空，就这这里打开
+		{
+			loadFile(file);
+		}
+		else
+		{	
+			MainWindow *newWin = new MainWindow;
+			newWin->show();
+			newWin->loadFile(file);
+			
+		}
+	}
+
 	
 }
 
 void MainWindow::slotSaveFile()
 {
-    // MainWindow *newWin = new MainWindow();  
-    // newWin->show();  
+
 	
 }
 
@@ -125,15 +152,13 @@ void MainWindow::slotCopy()
 
 void MainWindow::slotCut()
 {
-    // MainWindow *newWin = new MainWindow();  
-    // newWin->show();  
+
 	
 }
 
 void MainWindow::slotPaste()
 {
-    // MainWindow *newWin = new MainWindow();  
-    // newWin->show();  
+
 	
 }
 
@@ -161,5 +186,7 @@ void MainWindow::slotMoveCursor()
 	
 	
 }
+
+
 
 
