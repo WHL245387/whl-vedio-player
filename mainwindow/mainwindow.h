@@ -5,7 +5,10 @@
 class QMenu;
 class QAction;
 //class QTextCodec;
+class QLabel;
 class QTextEdit;
+
+
 class QWorkspace;
 
 class MainWindow : public QMainWindow
@@ -16,6 +19,8 @@ public:
 	
 	void createMenus();
 	void createActions();
+	void createTools();
+	void createStatus();
 public slots:
 
 	void slotNewFile();
@@ -25,6 +30,7 @@ public slots:
 	void slotCut();
 	void slotPaste();
 	void slotAbout();
+	void slotMoveCursor();
 
 private:
 
@@ -32,6 +38,9 @@ private:
 	QMenu *fileMenu;
 	QMenu *editMenu;
 	QMenu *helpMenu;
+	
+	QToolBar *fileToolBar;
+	QToolBar *editToolBar;
 	
 	QAction *newFileAction;
 	QAction *openFileAction;
@@ -41,6 +50,7 @@ private:
 	QAction *cutAction;	
 	QAction *pasteAction;	
 	QAction *aboutAction;
+	QLabel * statusBarLabel;
 	
 	QTextEdit *text;
 	

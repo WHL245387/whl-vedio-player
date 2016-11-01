@@ -3,6 +3,7 @@
 #include "QMenu"
 #include "QAction"
 #include "QTextEdit"
+#include "QLabel"
 #include "QWorkspace"
 
 #include "mainwindow.h"
@@ -10,11 +11,13 @@
 MainWindow::MainWindow()
 {
 	setWindowTitle("TestWindow");
-//	text = new QText(this);
-//	setCentralWidget(text);
+	text = new QTextEdit("QTextEdit",this);
+	setCentralWidget(text);
 	
 	createActions();
 	createMenus();
+	createTools();
+	createStatus();
 	// aboutAction = new QAction(tr("About"),this);
 	// aboutAction->setCheckable(true);
 	// aboutMenu = menuBar()->addMenu(tr("about"));
@@ -53,7 +56,7 @@ void MainWindow::createActions()
 	connect(exitAction,SIGNAL(triggered()),this,SLOT(close()));
 	
 	//edit
-	copyAction = new QAction(QIcon(":/images/save.png"),tr("Copy"),this);
+	copyAction = new QAction(QIcon(":/images/copy.png"),tr("Copy"),this);
 	connect(copyAction,SIGNAL(triggered()),this,SLOT(slotCopy()));
 	cutAction = new QAction(QIcon(":/images/cut.png"),tr("Cut"),this);
 	connect(cutAction,SIGNAL(triggered()),this,SLOT(slotCut()));
@@ -65,6 +68,34 @@ void MainWindow::createActions()
 	connect(aboutAction,SIGNAL(triggered()),this,SLOT(slotAbout()));
 	
 }
+
+
+void MainWindow::createTools()
+{
+	fileToolBar = addToolBar(tr("File"));
+	fileToolBar->addAction(newFileAction);
+	fileToolBar->addAction(openFileAction);
+	fileToolBar->addAction(saveFileAction);	
+	
+	editToolBar = addToolBar(tr("Edit"));
+	editToolBar->addAction(copyAction);
+	editToolBar->addAction(cutAction);
+	editToolBar->addAction(pasteAction);
+}
+
+
+void MainWindow::createStatus()
+{
+	statusBarLabel = new QLabel("Ready");
+	statusBarLabel->setAlignment(Qt::AlignHCenter);//设置对齐方式
+	statusBarLabel->setMinimumSize(statusBarLabel->sizeHint());
+	statusBar()->addWidget(statusBarLabel);
+	statusBar()->setStyleSheet(QString ("QStatusBar::item{border:0px}"));
+	connect(text,SIGNAL(cursorPositionChanged()),this,SLOT(slotMoveCursor()));
+
+
+}
+
 
 void MainWindow::slotNewFile()
 {
@@ -117,3 +148,18 @@ void MainWindow::slotAbout()
 		
 	
 }
+
+
+
+void MainWindow::slotMoveCursor()
+{
+	int row,col;
+	QTextCursor cursor = text->textCursor();
+	row = cursor.blockNumber();
+	col = cursor.columnNumber();
+	statusBarLabel->setText(tr("%1 line,%2 col").arg(row).arg(col));
+	
+	
+}
+
+
