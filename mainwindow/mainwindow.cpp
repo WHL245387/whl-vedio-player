@@ -1,26 +1,24 @@
 #include <QtGui>
-
 #include "QMenu"
 #include "QAction"
 #include "QTextEdit"
 #include "QLabel"
 #include "QWorkspace"
 #include "QFileDialog"
-
 #include "mainwindow.h"
 
 MainWindow::MainWindow()
 {
 	setAttribute(Qt::WA_DeleteOnClose);
 	setWindowTitle("TestWindow");
-	text = new QTextEdit("QTextEdit",this);
+	text = new QTextEdit(this);
 	setCentralWidget(text);
-	
+	currentFile = "";
+	setWindowTitle("new.txt");
 	createActions();
 	createMenus();
 	createTools();
 	createStatus();
-
 }
 
 void MainWindow::createMenus()
@@ -29,6 +27,7 @@ void MainWindow::createMenus()
 	fileMenu->addAction(newFileAction);	
 	fileMenu->addAction(openFileAction);
 	fileMenu->addAction(saveFileAction);	
+	fileMenu->addAction(saveAsFileAction);
 	fileMenu->addAction(exitAction);
 	
 	editMenu = menuBar()->addMenu(tr("Edit"));
@@ -56,6 +55,11 @@ void MainWindow::createActions()
 	saveFileAction->setStatusTip(tr("Save File")); 	
 	connect(saveFileAction,SIGNAL(triggered()),this,SLOT(slotSaveFile()));
 	
+	saveAsFileAction = new QAction(tr("Save As"),this);
+	saveAsFileAction->setStatusTip(tr("Save As File")); 	
+	connect(saveAsFileAction,SIGNAL(triggered()),this,SLOT(slotSaveAsFile()));
+	
+	
 	exitAction = new QAction("Exit",this);
 	exitAction->setStatusTip(tr("Exit"));  
 	connect(exitAction,SIGNAL(triggered()),this,SLOT(close()));
@@ -80,7 +84,6 @@ void MainWindow::createActions()
 	
 }
 
-
 void MainWindow::createTools()
 {
 	fileToolBar = addToolBar(tr("File"));
@@ -96,7 +99,6 @@ void MainWindow::createTools()
 	editToolBar->addAction(pasteAction);
 }
 
-
 void MainWindow::createStatus()
 {
 	statusBarLabel = new QLabel("Ready");
@@ -109,7 +111,6 @@ void MainWindow::createStatus()
 
 }
 
-
 void MainWindow::loadFile(QString fileName)
 {
 	QFile file(fileName);//The QFile class provides an interface for reading from and writing to files
@@ -121,33 +122,65 @@ void MainWindow::loadFile(QString fileName)
 		{
 			text->append(textStream.readLine());
 		}
-		
-	}
+		setWindowTitle(fileName);
+	}	
+}
+
+bool MainWindow::maybeSaveFile()
+{
+	
 	
 }
 
+void  MainWindow::saveFile(QString fileName)
+{
+	QFile file(fileName);
+	if(!file.open(QFile::WriteOnly|QFile::Text))
+	{
+		QMessageBox::critical(this,"critical","can not write file");
+	}
+	else
+	{
+		QTextStream out(&file);
+		out<<text->toPlainText();
+		//setFileName(fileName);
+		setWindowTitle(fileName);
+	}
+}
+void MainWindow::setFileName(QString fileName)
+{
+	currentFile = fileName;
+	text->document()->setModified(false);
+	this->setWindowModified(false);
+	fileName.isEmpty()?this->setWindowFilePath("new.txt"):
+	this->setWindowFilePath(fileName);
+}
+
+
 void MainWindow::slotNewFile()
 {
-
 	MainWindow *newWin = new MainWindow;
 	newWin->show();
-	
 }
 
 void MainWindow::slotOpenFile()
 {
 	QString file = QFileDialog::getOpenFileName(this);
+//	currentFile = QFileDialog::getOpenFileName(this);
 	if(!file.isEmpty())
 	{
+
 		if(text->document()->isEmpty())//当前text为空，就这这里打开
 		{
-			loadFile(file);
+			currentFile = file;
+			loadFile(currentFile);
 		}
 		else
 		{	
 			MainWindow *newWin = new MainWindow;
 			newWin->show();
-			newWin->loadFile(file);
+			newWin->currentFile = file;
+			newWin->loadFile(newWin->currentFile);
 			
 		}
 	}
@@ -157,7 +190,32 @@ void MainWindow::slotOpenFile()
 
 void MainWindow::slotSaveFile()
 {
+	//如果没有打开过文件直接另存为
+	if(currentFile.isEmpty())
+	{
+		slotSaveAsFile();
+	}
+	else
+	{
+		saveFile(currentFile);
+		
+	}
 
+	
+}
+void MainWindow::slotSaveAsFile()
+{
+	QString fileName = QFileDialog::getSaveFileName(this,tr("Save As File"),"./",tr("Text File(*.txt)"));
+//	currentFile = QFileDialog::getSaveFileName(this,tr("Save File"));
+	if(fileName.isEmpty())
+	{
+		
+	}
+	else
+	{
+		currentFile = fileName;
+		saveFile(fileName);
+	}
 	
 }
 
@@ -177,8 +235,6 @@ void MainWindow::slotPaste()
 	text->paste();
 	
 }
-
-
 
 void MainWindow::slotAbout()
 {
