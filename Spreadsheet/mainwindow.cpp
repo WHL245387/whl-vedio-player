@@ -9,17 +9,22 @@
 
 MainWindow::MainWindow()
 {
-	setAttribute(Qt::WA_DeleteOnClose);
-	setWindowTitle("TestWindow");
-	text = new QTextEdit(this);
-	setCentralWidget(text);
-	currentFile = "";
-	setWindowTitle("new.txt");
-	setWindowIcon(QIcon(":/images/icon.png"));
+
+	
+	spresdsheet = new Spreadsheet;//创建一个Spreadsheet
+	setCentralWidget(spresdsheet);//把Spreadsheet设置为主窗口的中央窗口
+	
 	createActions();
 	createMenus();
+	createContextMenu();
 	createTools();
 	createStatus();
+	
+	readSetting();
+	findDialog = 0;
+	
+	setWindowIcon(":/iamges/icon.png");
+	setCurrentFile();
 }
 
 void MainWindow::createMenus()
@@ -29,38 +34,73 @@ void MainWindow::createMenus()
 	fileMenu->addAction(openFileAction);
 	fileMenu->addAction(saveFileAction);	
 	fileMenu->addAction(saveAsFileAction);
+	separatorAction = fileMenu->addSeparator();
+	for(int i = 0; i < MaxRecentFiles; i++ )
+	{
+		fileMenu->addAction(recentFileActions[i]);
+		
+	}
+	fileMenu->addSeparator();
 	fileMenu->addAction(exitAction);
 	
-	editMenu = menuBar()->addMenu(tr("Edit"));
+	editMenu = menuBar()->addMenu(tr("&Edit"));
 	editMenu->addAction(copyAction);
 	editMenu->addAction(cutAction);
 	editMenu->addAction(pasteAction);
+	editMenu->addAction(deleteAction);
+	selectSubMenu = editMenu->addMenu(tr("&Select");
+	selectSubMenu->addAction(selectRowAction);
+	selectSubMenu->addAction(selectColumnAction);
+	selectSubMenu->addAction(selectAllAction);
+	editMenu->addSeparator();
+	editMenu->addAction(findAction);
+	editMenu->addAction(goToCellAction);
 	
-	helpMenu = menuBar()->addMenu(tr("Help"));
+	
+	toolsMenu = menuBar()->addMenu(tr("&Tools"));
+	toolsMenu->addAction(recalculateAction);
+	toolsMenu->addAction(sortAction);	
+	
+	optionsMenu = menuBar()->addMenu(tr("&Options"));
+	optionsMenu->addAction(showGridAction);
+	optionsMenu->addAction(autoRecalcAction);	
+	
+	helpMenu = menuBar()->addMenu(tr("&Help"));
 	helpMenu->addAction(aboutAction);
+	helpMenu->addAction(aboutQtAction);
 }
 
 void MainWindow::createActions()
 {
-	//file
+	//file menu
+	//New
 	newFileAction = new QAction(QIcon(":/images/new.png"),tr("New"),this);
 	newFileAction->setShortcut(tr("Ctrl+N"));  
-	newFileAction->setStatusTip(tr("New File"));  
+	newFileAction->setStatusTip(tr("Create a new spresdsheet file"));  
 	connect(newFileAction,SIGNAL(triggered()),this,SLOT(slotNewFile()));
-	
+	//Opem
 	openFileAction = new QAction(QIcon(":/images/open.png"),tr("Open"),this);
 	openFileAction->setStatusTip(tr("Open File"));  
 	connect(openFileAction,SIGNAL(triggered()),this,SLOT(slotOpenFile()));
-	
+	//Save
 	saveFileAction = new QAction(QIcon(":/images/save.png"),tr("Save"),this);
 	saveFileAction->setStatusTip(tr("Save File")); 	
 	connect(saveFileAction,SIGNAL(triggered()),this,SLOT(slotSaveFile()));
-	
+	//Save As
 	saveAsFileAction = new QAction(tr("Save As"),this);
 	saveAsFileAction->setStatusTip(tr("Save As File")); 	
 	connect(saveAsFileAction,SIGNAL(triggered()),this,SLOT(slotSaveAsFile()));
 	
+	//Recent File
+	for(int i = 0;i < MaxRecentFiles; i++)
+	{
+		recentFileActions[i] = new QAction(this);
+		recentFileActions[i]->setVisible(false);
+		connect(recentFileActions[i],SIGNAL(triggered()),this,SLOT(slotOpenRecentFile()));
+	}
 	
+	
+	//Exit
 	exitAction = new QAction("Exit",this);
 	exitAction->setStatusTip(tr("Exit"));  
 	connect(exitAction,SIGNAL(triggered()),this,SLOT(close()));
@@ -85,6 +125,14 @@ void MainWindow::createActions()
 	
 }
 
+void MainWindow::createContextMenu()
+{
+	spresdsheet->addAction(cutAction);
+	spresdsheet->addAction(copyAction);	
+	spresdsheet->addAction(pasteAction);
+	spresdsheet->setContextMenuolicy(Qt::ActionsContextMenu);	
+}
+
 void MainWindow::createTools()
 {
 	fileToolBar = addToolBar(tr("File"));
@@ -99,6 +147,8 @@ void MainWindow::createTools()
 	editToolBar->addAction(cutAction);
 	editToolBar->addAction(pasteAction);
 }
+
+
 
 void MainWindow::createStatus()
 {
